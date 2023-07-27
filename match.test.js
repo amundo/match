@@ -36,7 +36,7 @@ Deno.test("no overlapping keys", () =>
     ),
   ))
 
-Deno.test("overlapping keys", () => {
+Deno.test("missing key in comparand", () => {
   assert(
     !match(
       { "form": "gato", "gloss": "cat" },
@@ -45,14 +45,16 @@ Deno.test("overlapping keys", () => {
   )
 })
 
-Deno.test("query is subset", () => {
+
+Deno.test("query is subset of comparand", () => {
   assert(match(
     { "form": "gato" },
     { "form": "gato", "gloss": "cat" },
   ))
 })
 
-Deno.test("query is subset as array", () => {
+
+Deno.test("query as array of terms is subset", () => {
   assert(match(
     [
       ["form", "gato"],
@@ -61,7 +63,8 @@ Deno.test("query is subset as array", () => {
   ))
 })
 
-Deno.test("query is superset", () => {
+
+Deno.test("query is superset but field constraint matches", () => {
   assert(match(
     { "form": "gato", "wordClass": "noun" },
     { "form": "gato" },
@@ -69,7 +72,7 @@ Deno.test("query is superset", () => {
   ))
 })
 
-Deno.test("query is superset as array queries", () => {
+Deno.test("query as array queries is superset but field constraint matches", () => {
   assert(match(
     [
       ["form", "gato"],
@@ -89,6 +92,7 @@ Deno.test("regexp", () =>
       { "form": "gato" },
     ),
   ))
+
 
 Deno.test("wrong regexp", () => {
   return assert(
@@ -110,6 +114,17 @@ Deno.test("wrong regexp array query", () => {
   )
 })
 
+Deno.test("right regexp array query", () => {
+  return assert(
+    match(
+      [
+        ["form", /^g/],
+      ],
+      { "form": "gato" },
+    ),
+  )
+})
+
 Deno.test("two queries on same field ok", () =>
   assert(match(
     [
@@ -118,6 +133,7 @@ Deno.test("two queries on same field ok", () =>
     ],
     { "form": "gato" },
   )))
+
 
 Deno.test("some unicode data", () => {
   assert(
@@ -140,6 +156,7 @@ Deno.test("some unicode data", () => {
   )
 })
 
+
 Deno.test("match returns true when all query values match comparand", () => {
   let queries = { name: "John", age: 30 }
   let comparand = { name: "John", age: 30 }
@@ -149,8 +166,9 @@ Deno.test("match returns true when all query values match comparand", () => {
 Deno.test("match returns false when not all query values match comparand", () => {
   let queries = { name: "John", age: "30" }
   let comparand = { name: "John", age: "25" }
-  assertEquals(match(queries, comparand), false)
+  assert(!match(queries, comparand))
 })
+
 
 Deno.test("match returns true when all query values match comparand with fields filter", () => {
   let queries = { name: "John", age: "30" }
@@ -159,17 +177,19 @@ Deno.test("match returns true when all query values match comparand with fields 
   assertEquals(match(queries, comparand, fields), true)
 })
 
+
 Deno.test("match returns false when all query values match comparand with fields filter", () => {
   let queries = { name: "John", age: "30" }
   let comparand = { name: "John", age: "25", address: "NYC" }
   let fields = ["name", "age"]
-  assertEquals(match(queries, comparand, fields), false)
+  assert(!match(queries, comparand, fields))
 })
+
 
 Deno.test("match returns true when the query values match comparand with regular expression", () => {
   let queries = { name: /^John/ }
   let comparand = { name: "John" }
-  assertEquals(match(queries, comparand), true)
+  assert(match(queries, comparand))
 })
 
 Deno.test("match returns true when the query values match comparand with regular expression, array style", () => {
@@ -178,19 +198,14 @@ Deno.test("match returns true when the query values match comparand with regular
   assertEquals(match(queries, comparand), true)
 })
 
-// @TODO handle values that are numbers
 
-Deno.test("match returns false when the query values does not match comparand with regular expression", () => {
-  let queries = { name: "John", bad: "" }
-  let comparand = { name: "John" }
-  assertEquals(match(queries, comparand), false)
-})
 
 Deno.test("empty string values should be ignored", () => {
   let queries = { name: "" }
   let comparand = { name: "John" }
-  assertEquals(match(queries, comparand), false)
+  assert(!match(queries, comparand))
 })
+
 
 Deno.test("can match symbol query to phone", () => {
   let symbolQuery = { symbol: "p" }
@@ -206,6 +221,24 @@ Deno.test("can match symbol query to phone", () => {
 
   assert(match(symbolQuery, phone))
 })
+
+
+
+
+
+
+
+
+
+
+// @TODO handle values that are numbers
+
+// Deno.test("match returns false when the query values does not match comparand with regular expression", () => {
+// let queries = { name: "John", bad: "" }
+// let comparand = { name: "John" }
+// assertEquals(match(queries, comparand), false)
+// })
+
 
 // Deno.test("can support array field match", () => {
 //   let queries = [
