@@ -17,7 +17,6 @@ let hasNestedKeys = (path, object) =>
       return false
     })
 
-    console.log(`matchy`)
 let match = (queries, comparand, fields = []) => {
   if (!Array.isArray(queries)) {
     let queryObject = queries
